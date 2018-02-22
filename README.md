@@ -1,7 +1,7 @@
 
 
-|Lake Track|Jungle Track|
-|:--------:|:------------:|
+|Track 1|Track 2|
+|:-----:|:-----:|
 |[![Lake Track](images/lake_track.png)](https://youtu.be/hTPADovdyfA)|[![Jungle Track](images/jungle_track.png)](https://youtu.be/mZOc-zrbnR8)|
 |[YouTube Link](https://youtu.be/hTPADovdyfA)|[YouTube Link](https://youtu.be/mZOc-zrbnR8)|
 
@@ -20,7 +20,7 @@ As image processing is involved, the model is using convolutional layers for aut
 - model.py The script used to create and train the model.
 - drive.py The script to drive the car. You can feel free to resubmit the original drive.py or make modifications and submit your modified version.
 - utils.py The script to provide useful functionalities (i.e. image preprocessing and augumentation)
-- model.h5 The model weights.
+- bestmodel.h5 The model weights.
 - environments.yml conda environment (Use TensorFlow without GPU)
 - environments-gpu.yml conda environment (Use TensorFlow with GPU)
 
@@ -30,24 +30,19 @@ Note: drive.py is originally from [the Udacity Behavioral Cloning project GitHub
 
 ### Install required python libraries:
 
-You need a [anaconda](https://www.continuum.io/downloads) or [miniconda](https://conda.io/miniconda.html) to use the environment setting.
+To use the tensorflow-gpu, you need compatible versions of CUDA drivers and CUDnn.
 
 ```python
-# Use TensorFlow without GPU
-conda env create -f environment.yml 
-
-# Use TensorFlow with GPU
-conda env create -f environment-gpu.yml
+# Dependencies can be installed using these commands. 
+pip install numpy matplotlib jupyter opencv3 pillow scikit-learn scikit-image scipy h5py eventlet flask-socketio seaborn pandas imageio moviepy tensorflow-gpu keras
 ```
-
-Or you can manually install the required libraries (see the contents of the environemnt*.yml files) using pip.
 
 ### Run the pretrained model
 
-Start up [the Udacity self-driving simulator](https://github.com/udacity/self-driving-car-sim), choose a scene and press the Autonomous Mode button.  Then, run the model as follows:
+Start up [the Udacity self-driving simulator](https://github.com/udacity/self-driving-car-sim), choose the 2nd scene and press the Autonomous Mode button.  Then, run the model as follows:
 
 ```python
-python drive.py model.h5
+python drive.py bestmodel.h5
 ```
 
 ### To train the model
@@ -55,7 +50,7 @@ python drive.py model.h5
 You'll need the data folder which contains the training images.
 
 ```python
-python model.py
+python model.py <relative-path-to-image-folder>
 ```
 
 This will generate a file `model-<epoch>.h5` whenever the performance in the epoch is better than the previous best.  For example, the first epoch will generate a file called `model-000.h5`.
@@ -112,7 +107,7 @@ The below is an model structure output from the Keras which gives more details o
 ### Image Sizing
 
 - the images are cropped so that the model won’t be trained with the sky and the car front parts
-- the images are resized to 66x200 (3 YUV channels) as per NVIDIA model
+- the images are resized to 160x320 (3 YUV channels).
 - the images are normalized (image data divided by 127.5 and subtracted 1.0).  As stated in the Model Architecture section, this is to avoid saturation and make gradients work better)
 
 
@@ -134,31 +129,6 @@ For training, I used the following augumentation technique along with Python gen
 Using the left/right images is useful to train the recovery driving scenario.  The horizontal translation is useful for difficult curve handling (i.e. the one after the bridge).
 
 
-### Examples of Augmented Images
-
-The following is the example transformations:
-
-**Center Image**
-
-![Center Image](images/center.png)
-
-**Left Image**
-
-![Left Image](images/left.png)
-
-**Right Image**
-
-![Right Image](images/right.png)
-
-**Flipped Image**
-
-![Flipped Image](images/flip.png)
-
-**Translated Image**
-
-![Translated Image](images/trans.png)
-
-
 ## Training, Validation and Test
 
 I splitted the images into train and validation set in order to measure the performance at every epoch.  Testing was done using the simulator.
@@ -169,24 +139,13 @@ As for training,
 - I used Adam optimizer for optimization with learning rate of 1.0e-4 which is smaller than the default of 1.0e-3.  The default value was too big and made the validation loss stop improving too soon.
 - I used ModelCheckpoint from Keras to save the model only if the validation loss is improved which is checked for every epoch.
 
-### The Lake Side Track
+### The Jungle Track (Track 2)
 
-As there can be unlimited number of images augmented, I set the samples per epoch to 20,000.  I tried from 1 to 200 epochs but I found 5-10 epochs is good enough to produce a well trained model for the lake side track.  The batch size of 40 was chosen as that is the maximum size which does not cause out of memory error on my Mac with NVIDIA GeForce GT 650M 1024 MB.
-
-### The Jungle Track
-
-This tracker was later released in the new simulator by Udacity and replaced the old mountain track.  It's much more difficuilt than the lake side track and the old mountain track.
-
-I used the simulator to generate training data by doing 3 to 4 rounds.  Also, added several recovery scenarios to handle tricky curves and slopes.
-
-I felt that the validation loss is not a great indication of how well it drives.  So, I tried the last several models to see which one drives the best.  For this, I set the save_best_only to False (use `-o false` for model.py), and I used 50 epcohs (Use `-n 50`).
+I generated the training data by using the mouse to steer the car for 5 rounds. Then I trained the model for just 1 epoch without any recovery scenario. The result can be seen as 'bestmodel.h5'. I wanted to show how a minimal amount of training can result in such a good model.
 
 ## Outcome
 
-The model can drive the course without bumping into the side ways.
-
-- [The Lake Track - YouTube Link](https://youtu.be/7QdL3Az55jU)
-- [The Mountain Track - YouTube Link](https://youtu.be/fqaibk81eM4)
+The model can drive on Track 2 (Jungle) with only 1 or 2 manual input.
 
 ## References
 - NVIDIA model: https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
