@@ -16,7 +16,7 @@ def load_data(args):
     """
     Load training data and split it into training and validation set
     """
-    data_df = pd.read_csv(os.path.join(args.data_dir, 'driving_log.csv'))
+    data_df = pd.read_csv(os.path.join(os.getcwd(), args.data_dir, 'driving_log.csv'), names=['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed'])
 
     X = data_df[['center', 'left', 'right']].values
     y = data_df['steering'].values
@@ -28,7 +28,23 @@ def load_data(args):
 
 def build_model(args):
     """
-    Modified NVIDIA model
+    NVIDIA model used
+    Image normalization to avoid saturation and make gradients work better.
+    Convolution: 5x5, filter: 24, strides: 2x2, activation: ELU
+    Convolution: 5x5, filter: 36, strides: 2x2, activation: ELU
+    Convolution: 5x5, filter: 48, strides: 2x2, activation: ELU
+    Convolution: 3x3, filter: 64, strides: 1x1, activation: ELU
+    Convolution: 3x3, filter: 64, strides: 1x1, activation: ELU
+    Drop out (0.5)
+    Fully connected: neurons: 100, activation: ELU
+    Fully connected: neurons: 50, activation: ELU
+    Fully connected: neurons: 10, activation: ELU
+    Fully connected: neurons: 1 (output)
+
+    # the convolution layers are meant to handle feature engineering
+    the fully connected layer for predicting the steering angle.
+    dropout avoids overfitting
+    ELU(Exponential linear unit) function takes care of the Vanishing gradient problem. 
     """
     model = Sequential()
     model.add(Lambda(lambda x: x/127.5-1.0, input_shape=INPUT_SHAPE))
